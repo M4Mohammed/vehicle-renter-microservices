@@ -1,0 +1,12 @@
+[submodule "vehicle-renter-profiles-service"]
+	path = vehicle-renter-profiles-service
+	url = git@github.com:oenegm/vehicle-renter-profiles-service.git
+[submodule "vehicle-renter-rental-requests-service"]
+	path = vehicle-renter-rental-requests-service
+	url = git@github.com:oenegm/vehicle-renter-rental-requests-service.git
+[submodule "vehicle-renter-user-info-service"]
+	path = vehicle-renter-user-info-service
+	url = git@github.com:oenegm/vehicle-renter-user-info-service.git
+[submodule "vehicle-renter-vehicle-info-service"]
+	path = vehicle-renter-vehicle-info-service
+	url = git@github.com:oenegm/vehicle-renter-vehicle-info-service.git
