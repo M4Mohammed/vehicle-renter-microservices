@@ -1,15 +1,15 @@
-[submodule "vehicle-renter-api-gateway"]
-	path = vehicle-renter-api-gateway
+[submodule "api-gateway"]
+	path = api-gateway
 	url = git@github.com:oenegm/vehicle-renter-api-gateway.git
-[submodule "vehicle-renter-profiles-service"]
-	path = vehicle-renter-profiles-service
+[submodule "profiles-service"]
+	path = profiles-service
 	url = git@github.com:oenegm/vehicle-renter-profiles-service.git
-[submodule "vehicle-renter-rental-requests-service"]
-	path = vehicle-renter-rental-requests-service
+[submodule "rental-requests-service"]
+	path = rental-requests-service
 	url = git@github.com:oenegm/vehicle-renter-rental-requests-service.git
-[submodule "vehicle-renter-user-info-service"]
-	path = vehicle-renter-user-info-service
+[submodule "user-info-service"]
+	path = user-info-service
 	url = git@github.com:oenegm/vehicle-renter-user-info-service.git
-[submodule "vehicle-renter-vehicle-info-service"]
-	path = vehicle-renter-vehicle-info-service
+[submodule "vehicle-info-service"]
+	path = vehicle-info-service
 	url = git@github.com:oenegm/vehicle-renter-vehicle-info-service.git
