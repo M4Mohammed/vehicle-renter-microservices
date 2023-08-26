@@ -1,0 +1,9 @@
+services:
+  vehicle-info-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=vehicle-info'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5000:5432'
