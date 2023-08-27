@@ -1,0 +1,150 @@
+version: '3.9'
+services:
+  api-gateway:
+    container_name: api-gateway
+    build: ./api-gateway
+    image: oenegm/api-gateway:latest
+    depends_on:
+      - keycloak
+    ports:
+      - "8081:8081"
+    environment:
+      - KEYCLOAK_URL=http://localhost:8080
+      - KEYCLOAK_REALM=vehicle-renter
+      - SERVER_PORT=8085
+      - PROFILES_SERVICE_URL=http://profiles-service:8082
+      - RENTAL_REQUESTS_SERVICE_URL=http://rental-requests-service:8083
+      - USER_INFO_SERVICE_URL=http://user-info-service:8084
+      - VEHICLE_INFO_SERVICE_URL=http://vehicle-info-service:8085
+
+
+  profiles-service:
+    container_name: profiles-service
+    build: ./profiles-service
+    image: profile-service:latest
+    depends_on:
+      - profile-db
+    environment:
+      - 'DB_URL=jdbc:postgresql://profiles-db:5432/postgres'
+      - 'DB_USERNAME=postgres'
+      - 'DB_PASSWORD=password'
+      - 'KEYCLOAK_URL=http://keycloak:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8082'
+    ports:
+      - "8082:8082"
+
+  profiles-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=profiles'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5002:5432'
+
+
+  rental-requests-service:
+    container_name: rental-requests-service
+    build: ./rental-requests-service
+    image: rental-requests-service:latest
+    depends_on:
+      - rental-requests-db
+    environment:
+      - 'DB_URL=jdbc:postgresql://rental-requests-db:5432/postgres'
+      - 'DB_USERNAME=postgres'
+      - 'DB_PASSWORD=password'
+      - 'KEYCLOAK_URL=http://keycloak:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8083'
+    ports:
+      - "8083:8083"
+
+  rental-requests-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=rental-requests'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5003:5432'
+
+
+  user-info-service:
+    container_name: user-info-service
+    build: ./user-info-service
+    image: user-info-service:latest
+    depends_on:
+      - user-info-db
+    environment:
+      - 'DB_URL=jdbc:postgresql://user-info-db:5432/postgres'
+      - 'DB_USERNAME=postgres'
+      - 'DB_PASSWORD=password'
+      - 'KEYCLOAK_URL=http://keycloak:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8084'
+    ports:
+      - "8084:8084"
+
+  user-info-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=user-info'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5004:5432'
+
+
+  vehicle-info-service:
+    container_name: vehicle-info-service
+    build: ./vehicle-info-service
+    image: vehicle-info-service:latest
+    depends_on:
+      - vehicle-info-db
+    environment:
+      - 'DB_URL=jdbc:postgresql://vehicle-info-db:5432/postgres'
+      - 'DB_USERNAME=postgres'
+      - 'DB_PASSWORD=password'
+      - 'KEYCLOAK_URL=http://keycloak:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8085'
+    ports:
+      - "8085:8085"
+
+  vehicle-info-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=vehicle-info'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5005:5432'
+
+
+  keycloak:
+    container_name: keycloak
+    image: jboss/keycloak:latest
+    environment:
+      - 'KEYCLOAK_USER=admin'
+      - 'KEYCLOAK_PASSWORD=admin'
+      - 'DB_VENDOR=POSTGRES'
+      - 'DB_ADDR=keycloak-db'
+      - 'DB_DATABASE=keycloak'
+      - 'DB_USER=keycloak'
+      - 'DB_PASSWORD=keycloak'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+    command:
+      - "-b 0.0.0.0"
+
+  keycloak-db:
+    image: postgres:latest
+    environment:
+      - 'POSTGRES_DB=keycloak'
+      - 'POSTGRES_USER=keycloak'
+      - 'POSTGRES_PASSWORD=keycloak'
+    ports:
+      - "5000:5432"
