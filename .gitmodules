@@ -13,3 +13,6 @@
 [submodule "vehicle-info-service"]
 	path = vehicle-info-service
 	url = git@github.com:oenegm/vehicle-renter-vehicle-info-service.git
+[submodule "config-server"]
+    path = config-server
+    url = git@github.com:oenegm/vehicle-renter-config-server.git
