@@ -1,21 +1,35 @@
 version: '3.9'
 services:
+  config-server:
+    container_name: config-server
+    build: ./config-server
+    image: config-server:latest
+    ports:
+      - "8071:8071"
+    environment:
+      - 'SERVER_PORT=8071'
+    networks:
+      backend:
+
+
   api-gateway:
     container_name: api-gateway
     build: ./api-gateway
-    image: oenegm/api-gateway:latest
+    image: api-gateway:latest
     depends_on:
       - keycloak
     ports:
       - "8081:8081"
     environment:
-      - KEYCLOAK_URL=http://localhost:8080
-      - KEYCLOAK_REALM=vehicle-renter
-      - SERVER_PORT=8085
-      - PROFILES_SERVICE_URL=http://profiles-service:8082
-      - RENTAL_REQUESTS_SERVICE_URL=http://rental-requests-service:8083
-      - USER_INFO_SERVICE_URL=http://user-info-service:8084
-      - VEHICLE_INFO_SERVICE_URL=http://vehicle-info-service:8085
+      - 'KEYCLOAK_URL=http://localhost:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8081'
+      - 'PROFILES_SERVICE_URL=http://profiles-service:8082'
+      - 'RENTAL_REQUESTS_SERVICE_URL=http://rental-requests-service:8083'
+      - 'USER_INFO_SERVICE_URL=http://user-info-service:8084'
+      - 'VEHICLE_INFO_SERVICE_URL=http://vehicle-info-service:8085'
+    networks:
+      backend:
 
 
   profiles-service:
@@ -33,6 +47,8 @@ services:
       - 'SERVER_PORT=8082'
     ports:
       - "8082:8082"
+    networks:
+      backend:
 
   profiles-db:
     image: 'postgres:latest'
@@ -42,6 +58,8 @@ services:
       - 'POSTGRES_USER=postgres'
     ports:
       - '5002:5432'
+    networks:
+      backend:
 
 
   rental-requests-service:
@@ -59,6 +77,8 @@ services:
       - 'SERVER_PORT=8083'
     ports:
       - "8083:8083"
+    networks:
+      backend:
 
   rental-requests-db:
     image: 'postgres:latest'
@@ -68,6 +88,8 @@ services:
       - 'POSTGRES_USER=postgres'
     ports:
       - '5003:5432'
+    networks:
+      backend:
 
 
   user-info-service:
@@ -85,6 +107,8 @@ services:
       - 'SERVER_PORT=8084'
     ports:
       - "8084:8084"
+    networks:
+      backend:
 
   user-info-db:
     image: 'postgres:latest'
@@ -94,6 +118,8 @@ services:
       - 'POSTGRES_USER=postgres'
     ports:
       - '5004:5432'
+    networks:
+      backend:
 
 
   vehicle-info-service:
@@ -111,6 +137,8 @@ services:
       - 'SERVER_PORT=8085'
     ports:
       - "8085:8085"
+    networks:
+      backend:
 
   vehicle-info-db:
     image: 'postgres:latest'
@@ -120,6 +148,8 @@ services:
       - 'POSTGRES_USER=postgres'
     ports:
       - '5005:5432'
+    networks:
+      backend:
 
 
   keycloak:
@@ -139,6 +169,8 @@ services:
       - keycloak-db
     command:
       - "-b 0.0.0.0"
+    networks:
+      backend:
 
   keycloak-db:
     image: postgres:latest
@@ -148,3 +180,10 @@ services:
       - 'POSTGRES_PASSWORD=keycloak'
     ports:
       - "5000:5432"
+    networks:
+      backend:
+
+
+networks:
+  backend:
+    driver: bridge
