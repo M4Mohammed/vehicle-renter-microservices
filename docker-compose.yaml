@@ -4,10 +4,48 @@ services:
     container_name: config-server
     build: ./config-server
     image: config-server:latest
-    ports:
-      - "8071:8071"
     environment:
-      - 'SERVER_PORT=8071'
+      - 'SERVER_PORT=8888'
+    ports:
+      - "8888:8888"
+    networks:
+      backend:
+
+
+  keycloak-db:
+    image: postgres:latest
+    environment:
+      - 'POSTGRES_DB=keycloak'
+      - 'POSTGRES_USER=keycloak'
+      - 'POSTGRES_PASSWORD=keycloak'
+    ports:
+      - "5000:5432"
+    networks:
+      backend:
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    container_name: keycloak
+    image: jboss/keycloak:latest
+    environment:
+      - 'KEYCLOAK_USER=admin'
+      - 'KEYCLOAK_PASSWORD=admin'
+      - 'DB_VENDOR=POSTGRES'
+      - 'DB_ADDR=keycloak-db'
+      - 'DB_DATABASE=keycloak'
+      - 'DB_USER=keycloak'
+      - 'DB_PASSWORD=keycloak'
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    command:
+      - "-b 0.0.0.0"
     networks:
       backend:
 
@@ -24,20 +62,35 @@ services:
       - 'KEYCLOAK_URL=http://localhost:8080'
       - 'KEYCLOAK_REALM=vehicle-renter'
       - 'SERVER_PORT=8081'
-      - 'PROFILES_SERVICE_URL=http://profiles-service:8082'
-      - 'RENTAL_REQUESTS_SERVICE_URL=http://rental-requests-service:8083'
-      - 'USER_INFO_SERVICE_URL=http://user-info-service:8084'
-      - 'VEHICLE_INFO_SERVICE_URL=http://vehicle-info-service:8085'
     networks:
       backend:
 
+
+  profiles-db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=profiles'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5002:5432'
+    networks:
+      backend:
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   profiles-service:
     container_name: profiles-service
     build: ./profiles-service
     image: profile-service:latest
     depends_on:
-      - profile-db
+      profile-db:
+        condition: service_healthy
+      config-server:
+        condition: service_started
     environment:
       - 'DB_URL=jdbc:postgresql://profiles-db:5432/postgres'
       - 'DB_USERNAME=postgres'
@@ -50,24 +103,32 @@ services:
     networks:
       backend:
 
-  profiles-db:
+
+  rental-requests-db:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=profiles'
+      - 'POSTGRES_DB=rental-requests'
       - 'POSTGRES_PASSWORD=password'
       - 'POSTGRES_USER=postgres'
     ports:
-      - '5002:5432'
+      - '5003:5432'
     networks:
       backend:
-
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rental-requests-service:
     container_name: rental-requests-service
     build: ./rental-requests-service
     image: rental-requests-service:latest
     depends_on:
-      - rental-requests-db
+      rental-requests-db:
+        condition: service_healthy
+      config-server:
+        condition: service_started
     environment:
       - 'DB_URL=jdbc:postgresql://rental-requests-db:5432/postgres'
       - 'DB_USERNAME=postgres'
@@ -80,24 +141,32 @@ services:
     networks:
       backend:
 
-  rental-requests-db:
+
+  user-info-db:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=rental-requests'
+      - 'POSTGRES_DB=user-info'
       - 'POSTGRES_PASSWORD=password'
       - 'POSTGRES_USER=postgres'
     ports:
-      - '5003:5432'
+      - '5004:5432'
     networks:
       backend:
-
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   user-info-service:
     container_name: user-info-service
     build: ./user-info-service
     image: user-info-service:latest
     depends_on:
-      - user-info-db
+      user-info-db:
+        condition: service_healthy
+      config-server:
+        condition: service_started
     environment:
       - 'DB_URL=jdbc:postgresql://user-info-db:5432/postgres'
       - 'DB_USERNAME=postgres'
@@ -110,35 +179,6 @@ services:
     networks:
       backend:
 
-  user-info-db:
-    image: 'postgres:latest'
-    environment:
-      - 'POSTGRES_DB=user-info'
-      - 'POSTGRES_PASSWORD=password'
-      - 'POSTGRES_USER=postgres'
-    ports:
-      - '5004:5432'
-    networks:
-      backend:
-
-
-  vehicle-info-service:
-    container_name: vehicle-info-service
-    build: ./vehicle-info-service
-    image: vehicle-info-service:latest
-    depends_on:
-      - vehicle-info-db
-    environment:
-      - 'DB_URL=jdbc:postgresql://vehicle-info-db:5432/postgres'
-      - 'DB_USERNAME=postgres'
-      - 'DB_PASSWORD=password'
-      - 'KEYCLOAK_URL=http://keycloak:8080'
-      - 'KEYCLOAK_REALM=vehicle-renter'
-      - 'SERVER_PORT=8085'
-    ports:
-      - "8085:8085"
-    networks:
-      backend:
 
   vehicle-info-db:
     image: 'postgres:latest'
@@ -150,36 +190,30 @@ services:
       - '5005:5432'
     networks:
       backend:
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-
-  keycloak:
-    container_name: keycloak
-    image: jboss/keycloak:latest
-    environment:
-      - 'KEYCLOAK_USER=admin'
-      - 'KEYCLOAK_PASSWORD=admin'
-      - 'DB_VENDOR=POSTGRES'
-      - 'DB_ADDR=keycloak-db'
-      - 'DB_DATABASE=keycloak'
-      - 'DB_USER=keycloak'
-      - 'DB_PASSWORD=keycloak'
-    ports:
-      - "8080:8080"
+  vehicle-info-service:
+    container_name: vehicle-info-service
+    build: ./vehicle-info-service
+    image: vehicle-info-service:latest
     depends_on:
-      - keycloak-db
-    command:
-      - "-b 0.0.0.0"
-    networks:
-      backend:
-
-  keycloak-db:
-    image: postgres:latest
+      vehicle-info-db:
+        condition: service_healthy
+      config-server:
+        condition: service_started
     environment:
-      - 'POSTGRES_DB=keycloak'
-      - 'POSTGRES_USER=keycloak'
-      - 'POSTGRES_PASSWORD=keycloak'
+      - 'DB_URL=jdbc:postgresql://vehicle-info-db:5432/postgres'
+      - 'DB_USERNAME=postgres'
+      - 'DB_PASSWORD=password'
+      - 'KEYCLOAK_URL=http://keycloak:8080'
+      - 'KEYCLOAK_REALM=vehicle-renter'
+      - 'SERVER_PORT=8085'
     ports:
-      - "5000:5432"
+      - "8085:8085"
     networks:
       backend:
 
